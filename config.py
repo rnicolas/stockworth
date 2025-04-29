@@ -1,5 +1,5 @@
-DATA_DIR = "/data"
-LOGS_DIR = "/logs"
+DATA_DIR = "./data"
+LOGS_DIR = "./logs"
 
 TICKERS_FILE = f"{DATA_DIR}/tickers.json"
 UNAVAILABLE_TICKERS_FILE = f"{DATA_DIR}/unavailable_tickers.json"

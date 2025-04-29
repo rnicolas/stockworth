@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import math
@@ -5,9 +6,9 @@ import time
 
 import numpy as np
 import yfinance as yf
-from tqdm import tqdm
+from tqdm.asyncio import tqdm_asyncio
 
-from config import DATA_DIR, ASSUMPTIONS_LOG, TICKERS_FILE, UNAVAILABLE_TICKERS_FILE
+from config import ASSUMPTIONS_LOG, TICKERS_FILE, UNAVAILABLE_TICKERS_FILE
 
 # Configure logging
 logging.basicConfig(
@@ -95,30 +96,38 @@ def calculate_intrinsic_value(eps: float, growth_rate: float, bond_yield: float)
     return intrinsic_value
 
 
-def analyze_stock(ticker: str, bond_yield: float) -> tuple:
-    """Analyze stock and determine buy/sell recommendation"""
+async def analyze_stock(ticker: str, bond_yield: float) -> tuple:
+    """Core analysis function with proper async handling"""
     try:
         stock = yf.Ticker(ticker)
-        info = stock.info
+        loop = asyncio.get_event_loop()
 
+        # Process blocking calls in executor
+        info = await loop.run_in_executor(None, stock.info.get)
         current_price = info.get("currentPrice", 0.0)
         eps = info.get("trailingEps", None)
-        if eps is None or eps <= 0:
-            logging.warning(f"{ticker}: Invalid EPS ({eps}). Skipping stock.")
+
+        # Validation check
+        if not eps or eps <= 0:
             return "Not Buy", [("EPS > 0", False, eps)]
 
+        # Financial metrics
         pe_ratio = info.get("trailingPE", 0.0)
         pb_ratio = info.get("priceToBook", 0.0)
         debt_to_equity = info.get("debtToEquity", 0.0)
         dividend_yield = info.get("dividendYield", 0.0) * 100
 
-        growth_rate = get_growth_rate(ticker, default_growth_rate=0.03)
-        intrinsic_value = calculate_intrinsic_value(eps, growth_rate, bond_yield)
+        # Async calculations
+        growth_rate = await loop.run_in_executor(None, get_growth_rate, ticker, 0.03)
+        intrinsic_value = await loop.run_in_executor(None, calculate_intrinsic_value,
+                                                     eps, growth_rate, bond_yield)
         intrinsic_value = min(intrinsic_value, 5 * current_price)
 
+        # Safety margin calculation
         margin_of_safety = ((intrinsic_value - current_price) / current_price) * 100 if current_price else 0
         margin_of_safety = min(max(margin_of_safety, -50), 100)
 
+        # Criteria evaluation
         criteria = [
             ("EPS > 0", eps > 0, eps),
             ("P/E < 20", pe_ratio < 20, pe_ratio),
@@ -129,43 +138,52 @@ def analyze_stock(ticker: str, bond_yield: float) -> tuple:
             ("Dividend Yield > 0", dividend_yield > 0, dividend_yield),
         ]
 
-        recommendation = "Buy" if all(result for _, result, _ in criteria) else "Not Buy"
+        return "Buy" if all(result for _, result, _ in criteria) else "Not Buy", criteria
 
-        return recommendation, criteria
     except Exception as e:
-        logging.error(f"Error analyzing stock {ticker}: {e}")
+        logging.error(f"{ticker} analysis failed: {str(e)[:100]}...")
         return "Error", []
 
 
-if __name__ == "__main__":
+async def main():
     bond_yield = fetch_bond_yield()
+
+    # Load tickers
     try:
-        with open(TICKERS_FILE, "r") as file:
-            tickers = json.load(file)
+        with open(TICKERS_FILE) as f:
+            tickers = json.load(f)
     except FileNotFoundError:
-        logging.error("tickers.json file not found. Exiting.")
+        logging.error("Missing tickers.json")
         exit(1)
 
+    # Process stocks concurrently
+    tasks = [analyze_stock(ticker, bond_yield) for ticker in tickers]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # Process results
     buy_recommendations = []
-    unavailable_tickers = []
-    intrinsic_values = []
+    errors = []
 
-    for ticker in tqdm(tickers, desc="Analyzing tickers"):
-        recommendation, criteria = analyze_stock(ticker, bond_yield)
-        if recommendation == "Buy":
-            buy_recommendations.append((ticker, criteria))
-            for criterion, result, value in criteria:
-                if criterion == "Intrinsic Value > Current Price" and result:
-                    intrinsic_values.append(value)
-        elif recommendation == "Error":
-            unavailable_tickers.append(ticker)
-        time.sleep(1)
+    for ticker, result in zip(tickers, results):
+        if isinstance(result, Exception):
+            logging.error(f"Critical failure for {ticker}: {result}")
+            errors.append(ticker)
+        else:
+            recommendation, criteria = result
+            if recommendation == "Buy":
+                buy_recommendations.append((ticker, criteria))
 
-    print("\nTickers with 'Buy' recommendation:")
+    # Output results
+    print("\nBuy Recommendations:")
     for ticker, criteria in buy_recommendations:
-        print(f"{ticker}:")
-        for criterion, result, value in criteria:
-            print(f"  {criterion}: {'Pass' if result else 'Fail'} (Value: {value:.2f})")
+        print(f"\n{ticker}:")
+        for name, passed, value in criteria:
+            print(f"  {name}: {'PASS' if passed else 'FAIL'} ({value:.2f})")
 
-    with open(UNAVAILABLE_TICKERS_FILE, "w") as file:
-        json.dump(unavailable_tickers, file, indent=4)
+    # Save errors
+    with open(UNAVAILABLE_TICKERS_FILE, "w") as f:
+        json.dump(errors, f, indent=2)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

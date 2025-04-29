@@ -14,7 +14,7 @@ def extract_tickers(file_name: str) -> list:
     list: A list of extracted tickers.
     """
     try:
-        with open(f"{DATA_DIR}/{file_name}", "r") as file:
+        with open(file_name, "r") as file:
             data = json.load(file)
         tickers = [item['SymbolFull'] for item in data['InstrumentDisplayDatas'] if 'SymbolFull' in item]
         return tickers
