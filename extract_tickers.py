@@ -1,8 +1,11 @@
 import json
 
-def extract_tickers(file_path: str) -> list:
+from config import DATA_DIR, ETORO_INFO, TICKERS_FILE
+
+
+def extract_tickers(file_name: str) -> list:
     """
-    Extract tickers from the specified JSON file.
+    Extract tickers from the specified JSON file in DATA_DIR.
 
     Parameters:
     file_path (str): The path to the JSON file.
@@ -11,9 +14,8 @@ def extract_tickers(file_path: str) -> list:
     list: A list of extracted tickers.
     """
     try:
-        with open(file_path, "r") as file:
+        with open(f"{DATA_DIR}/{file_name}", "r") as file:
             data = json.load(file)
-        
         tickers = [item['SymbolFull'] for item in data['InstrumentDisplayDatas'] if 'SymbolFull' in item]
         return tickers
 
@@ -22,11 +24,10 @@ def extract_tickers(file_path: str) -> list:
         return []
 
 if __name__ == "__main__":
-    file_path = "etoro_info.json"
-    tickers = extract_tickers(file_path)
+    tickers = extract_tickers(ETORO_INFO)
 
     if tickers:
-        with open("tickers.json", "w") as file:
+        with open(TICKERS_FILE, "w") as file:
             json.dump(tickers, file, indent=4)
         print(f"Extracted {len(tickers)} tickers and saved to 'tickers.json'")
     else:

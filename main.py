@@ -1,8 +1,12 @@
-import yfinance as yf
 import json
-from tqdm import tqdm  # Ensure tqdm is imported
 import time
+
 import requests
+import yfinance as yf
+from tqdm import tqdm  # Ensure tqdm is imported
+
+from config import DATA_DIR, TICKERS_FILE, UNAVAILABLE_TICKERS_FILE
+
 
 def analyze_stock(ticker: str) -> str:
     """
@@ -19,7 +23,7 @@ def analyze_stock(ticker: str) -> str:
         stock = yf.Ticker(ticker)
         info = stock.info
         balance_sheet = stock.balance_sheet if hasattr(stock, "balance_sheet") else None
-        
+
         # Extract necessary data
         current_price = info.get("currentPrice", 0)
         pe_ratio = info.get("trailingPE", 0)
@@ -30,7 +34,7 @@ def analyze_stock(ticker: str) -> str:
         eps = info.get("trailingEps", 0)
         book_value_per_share = info.get("bookValue", 0)
         sector = info.get("sector", "N/A")
-        
+
         # Ensure values are valid floats
         current_price = float(current_price) if isinstance(current_price, (int, float)) else 0
         pe_ratio = float(pe_ratio) if isinstance(pe_ratio, (int, float)) else 0
@@ -40,7 +44,7 @@ def analyze_stock(ticker: str) -> str:
         earnings_growth = float(earnings_growth) if isinstance(earnings_growth, (int, float)) else 0
         eps = float(eps) if isinstance(eps, (int, float)) else 0
         book_value_per_share = float(book_value_per_share) if isinstance(book_value_per_share, (int, float)) else 0
-        
+
         # Calculate current ratio if balance sheet data is available
         current_ratio = (
             balance_sheet.loc["Total Current Assets"].iloc[0] /
@@ -54,10 +58,10 @@ def analyze_stock(ticker: str) -> str:
         growth_rate = 5  # Assuming 5% growth rate
         bond_yield = 4.4  # Assuming a fixed bond yield, you might want to fetch the current yield
         intrinsic_value = eps * (8.5 + 2 * growth_rate) * (4.4 / bond_yield)
-        
+
         # Margin of Safety
         margin_of_safety = ((intrinsic_value - current_price) / current_price) * 100 if current_price else 0
-        
+
         # Criteria checks
         criteria = [
             ("P/E < 20", pe_ratio < 20 if pe_ratio else False),
@@ -73,7 +77,7 @@ def analyze_stock(ticker: str) -> str:
         # Count the number of "Pass" results
         pass_count = sum(result for _, result in criteria)
         total_criteria = len(criteria)
-        
+
         # Make recommendation
         recommendation = "Buy" if all(result for _, result in criteria) and margin_of_safety > 30 else "Not Buy"
 
@@ -86,8 +90,9 @@ def analyze_stock(ticker: str) -> str:
         print(f"Error analyzing stock {ticker}: {e}")
         return "Error"
 
+
 if __name__ == "__main__":
-    with open("tickers.json", "r") as file:
+    with open(TICKERS_FILE, "r") as file:
         tickers = json.load(file)  # Load ticker symbols from JSON file
 
     buy_recommendations = []
@@ -106,5 +111,5 @@ if __name__ == "__main__":
         print(ticker)
 
     # Save unavailable tickers to a JSON file
-    with open("unavailable_tickers.json", "w") as file:
+    with open(UNAVAILABLE_TICKERS_FILE, "w") as file:
         json.dump(unavailable_tickers, file, indent=4)

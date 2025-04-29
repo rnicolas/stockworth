@@ -1,5 +1,8 @@
 import json
 
+from config import TICKERS_FILE, UNAVAILABLE_TICKERS_FILE
+
+
 def remove_unavailable_tickers(tickers_file, unavailable_file):
     # Load the list of tickers
     with open(tickers_file, 'r') as tf:
@@ -18,13 +21,12 @@ def remove_unavailable_tickers(tickers_file, unavailable_file):
 
     print(f"Updated tickers saved back to {tickers_file}")
 
-def main():
-    tickers_file = "tickers.json"
-    unavailable_file = "unavailable_tickers.json"
 
-    print(f"Cleaning tickers in {tickers_file} using {unavailable_file}...")
-    remove_unavailable_tickers(tickers_file, unavailable_file)
+def main():
+    print(f"Cleaning tickers in {TICKERS_FILE} using {UNAVAILABLE_TICKERS_FILE}...")
+    remove_unavailable_tickers(TICKERS_FILE, UNAVAILABLE_TICKERS_FILE)
     print("Tickers cleaned successfully!")
+
 
 if __name__ == "__main__":
     main()

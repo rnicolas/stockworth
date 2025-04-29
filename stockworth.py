@@ -1,20 +1,25 @@
-import yfinance as yf
 import json
-from tqdm import tqdm
-import time
 import logging
-import numpy as np
 import math
+import time
+
+import numpy as np
+import yfinance as yf
+from tqdm import tqdm
+
+from config import DATA_DIR, ASSUMPTIONS_LOG, TICKERS_FILE, UNAVAILABLE_TICKERS_FILE
 
 # Configure logging
 logging.basicConfig(
-    filename="assumptions_log.txt",
+    filename=ASSUMPTIONS_LOG,
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
+
 def log_assumption(ticker: str, field: str, assumed_value: float):
     logging.info(f"{ticker}: Assumed {field} = {assumed_value}")
+
 
 def detect_outliers(intrinsic_values):
     if len(intrinsic_values) < 10:
@@ -26,6 +31,7 @@ def detect_outliers(intrinsic_values):
     threshold = median_value + 3 * std_dev  # 3-sigma rule
     return threshold
 
+
 def fetch_bond_yield(default_yield: float = 0.044) -> float:
     """Fetch 10-year US treasury bond yield"""
     try:
@@ -35,21 +41,22 @@ def fetch_bond_yield(default_yield: float = 0.044) -> float:
 
         return max(0.01, min(latest_yield, 0.10))  # Ensure realistic range
     except Exception as e:
-        logging.error(f"Error fetching bond yield: {e}. Using default yield of {default_yield*100}%.")
+        logging.error(f"Error fetching bond yield: {e}. Using default yield of {default_yield * 100}%.")
         return default_yield
+
 
 def calculate_cagr(initial: float, final: float, years: int) -> float:
     """Calculate Compound Annual Growth Rate (CAGR)"""
     if initial <= 0 or final <= 0 or years <= 0:
         logging.error(f"Invalid CAGR inputs: initial={initial}, final={final}, years={years}.")
         return None
-
     try:
         cagr = ((final / initial) ** (1 / years) - 1) * 100
         return cagr if np.isfinite(cagr) else None
     except (ZeroDivisionError, ValueError) as e:
         logging.error(f"Error calculating CAGR: {e}.")
         return None
+
 
 def get_growth_rate(ticker: str, default_growth_rate: float = 0.03) -> float:
     """Estimate growth rate based on net income CAGR"""
@@ -75,6 +82,7 @@ def get_growth_rate(ticker: str, default_growth_rate: float = 0.03) -> float:
         logging.error(f"Error calculating growth rate for {ticker}: {e}")
         return default_growth_rate
 
+
 def calculate_intrinsic_value(eps: float, growth_rate: float, bond_yield: float) -> float:
     """Calculate intrinsic value using an adjusted Graham's formula"""
     if eps <= 0 or bond_yield <= 0:
@@ -85,6 +93,7 @@ def calculate_intrinsic_value(eps: float, growth_rate: float, bond_yield: float)
     intrinsic_value = eps * adjusted_growth * (4.4 / bond_yield)
 
     return intrinsic_value
+
 
 def analyze_stock(ticker: str, bond_yield: float) -> tuple:
     """Analyze stock and determine buy/sell recommendation"""
@@ -127,11 +136,11 @@ def analyze_stock(ticker: str, bond_yield: float) -> tuple:
         logging.error(f"Error analyzing stock {ticker}: {e}")
         return "Error", []
 
+
 if __name__ == "__main__":
     bond_yield = fetch_bond_yield()
-
     try:
-        with open("tickers.json", "r") as file:
+        with open(TICKERS_FILE, "r") as file:
             tickers = json.load(file)
     except FileNotFoundError:
         logging.error("tickers.json file not found. Exiting.")
@@ -158,5 +167,5 @@ if __name__ == "__main__":
         for criterion, result, value in criteria:
             print(f"  {criterion}: {'Pass' if result else 'Fail'} (Value: {value:.2f})")
 
-    with open("unavailable_tickers.json", "w") as file:
+    with open(UNAVAILABLE_TICKERS_FILE, "w") as file:
         json.dump(unavailable_tickers, file, indent=4)
