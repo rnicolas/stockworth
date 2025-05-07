@@ -1,0 +1,25 @@
+[
+    {
+        "ticker": "ENAV.MI",
+        "intrinsic": 200.74679828040385,
+        "margin": 4923.693650660757,
+        "criteria": [
+            {
+                "rule": "EPS > 0",
+                "pass": true
+            },
+            {
+                "rule": "P/E < 20",
+                "pass": true
+            },
+            {
+                "rule": "P/B < 2",
+                "pass": true
+            },
+            {
+                "rule": "Debt/Equity < 0.5",
+                "pass": true
+            },
+            {
+                "rule": "Intrinsic > Price",
+                "pass": 

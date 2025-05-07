@@ -1,0 +1,33 @@
+2025-05-07 19:57:31,589 - INFO - Analysis failed for SDZNY: '<' not supported between instances of 'str' and 'int'
+2025-05-07 19:58:46,590 - INFO - Analysis failed for FNMA: '<' not supported between instances of 'str' and 'int'
+2025-05-07 20:06:32,320 - INFO - Analysis failed for COTY: '<' not supported between instances of 'str' and 'int'
+2025-05-07 20:21:20,702 - INFO - Analysis failed for INPP.L: '<' not supported between instances of 'str' and 'int'
+2025-05-07 20:28:25,858 - INFO - Analysis failed for WPS.L: '<' not supported between instances of 'str' and 'int'
+2025-05-07 20:32:34,198 - INFO - Analysis failed for TPX: HTTP Error 404: 
+2025-05-07 20:39:29,258 - INFO - Analysis failed for CEVA: '<' not supported between instances of 'str' and 'int'
+2025-05-07 20:41:49,044 - INFO - Analysis failed for SESG.PA: '<' not supported between instances of 'str' and 'int'
+2025-05-07 20:45:39,988 - INFO - Analysis failed for SUM: HTTP Error 404: 
+2025-05-07 20:46:53,714 - INFO - Analysis failed for CJJD: HTTP Error 404: 
+2025-05-07 20:46:58,096 - INFO - Analysis failed for CLSK: '<' not supported between instances of 'str' and 'int'
+2025-05-07 20:47:43,823 - INFO - Analysis failed for LPCN: '<' not supported between instances of 'str' and 'int'
+2025-05-07 20:49:39,669 - INFO - Analysis failed for MRNS: HTTP Error 404: 
+2025-05-07 20:50:16,447 - INFO - Analysis failed for ARAY: '<' not supported between instances of 'str' and 'int'
+2025-05-07 20:51:29,077 - INFO - Analysis failed for INFN: HTTP Error 404: 
+2025-05-07 20:51:59,684 - INFO - Analysis failed for NARI: HTTP Error 404: 
+2025-05-07 20:52:10,993 - INFO - Analysis failed for NKLA: HTTP Error 404: 
+2025-05-07 20:52:57,090 - INFO - Analysis failed for ROIC: HTTP Error 404: 
+2025-05-07 21:00:52,985 - INFO - Analysis failed for ZUO: HTTP Error 404: 
+2025-05-07 21:01:38,144 - INFO - Analysis failed for ZOM: HTTP Error 404: 
+2025-05-07 21:03:50,043 - INFO - Analysis failed for FLDD: HTTP Error 404: 
+2025-05-07 21:15:53,959 - INFO - Analysis failed for MTTR: HTTP Error 404: 
+2025-05-07 21:16:22,070 - INFO - Analysis failed for ROO.L: '<' not supported between instances of 'str' and 'int'
+2025-05-07 21:20:10,977 - INFO - Analysis failed for LUCK: '<' not supported between instances of 'str' and 'int'
+2025-05-07 21:20:19,690 - INFO - Analysis failed for FREY: HTTP Error 404: 
+2025-05-07 21:31:34,117 - INFO - Analysis failed for PFC: HTTP Error 404: 
+2025-05-07 21:32:40,509 - INFO - Analysis failed for CFB: HTTP Error 404: 
+2025-05-07 21:45:11,559 - INFO - Analysis failed for SILV: HTTP Error 404: 
+2025-05-07 21:46:01,700 - INFO - Analysis failed for MPLN: HTTP Error 404: 
+2025-05-07 21:47:08,151 - INFO - Analysis failed for OMGA: HTTP Error 404: 
+2025-05-07 21:47:43,559 - INFO - Analysis failed for OXSQ: '<' not supported between instances of 'str' and 'int'
+2025-05-07 21:49:23,616 - INFO - Analysis failed for MRAM: '<' not supported between instances of 'str' and 'int'
+2025-05-07 21:51:17,521 - INFO - Analysis failed for HTBI: HTTP Error 404: 
